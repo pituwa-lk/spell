@@ -1,4 +1,6 @@
-package lk.pituwa.นักแสวงหา
+package lk.pituwa.capture
+
+import lk.pituwa.model.{Request, Response}
 
 import scalaj.http._
 
@@ -15,16 +17,27 @@ import scalaj.http._
   * 111777111
   *
   * */
-class นักแสวงหา(เว็บไซต์: String) {
+class Crawler(request: Request) {
 
   /**
     *
     * @return
     */
-  def การจับกุม: String = {
-    val response: HttpResponse[String] = Http(เว็บไซต์).asString
+  def crawl: Response = {
+    val response: HttpResponse[String] = Http(request.uri).asString
     response.code match {
-      case 200 => response.body
+      case 200 => Response(request, response.body)
+      case _ => throw new Exception("server returned error" + response.code)
+    }
+  }
+
+  def sniff: Response = {
+    val response: HttpResponse[String] = Http(request.uri).method("HEAD").asString
+    response.code match {
+      case 200 => response.header("Content-Type") match {
+        case Some(header) => Response(request, header)
+        case None => Response(request, "application/unknown")
+      }
       case _ => throw new Exception("server returned error" + response.code)
     }
   }
