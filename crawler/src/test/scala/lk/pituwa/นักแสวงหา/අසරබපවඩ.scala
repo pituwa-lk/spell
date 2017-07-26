@@ -1,5 +1,6 @@
 package lk.pituwa.นักแสวงหา
 
+import net.ruippeixotog.scalascraper.browser.HtmlUnitBrowser
 import org.scalatest.FlatSpec
 
 /**
@@ -7,8 +8,13 @@ import org.scalatest.FlatSpec
   */
 class අසරබපවඩ extends FlatSpec
 {
-  "අසන්‍යාමකනව" should "බාගන් න පිටුව ේතිව නදේවරැ" in {
+  "අසරැවා\\බාගත්\\" should "දත්ත\\හිස්\\නැතුව\\තිබිය\\යුතුය\\" in {
     val Cนักแสวงหา = new นักแสวงหา(lk.registry.registered.head)
+
+    val typedBrowser: HtmlUnitBrowser = HtmlUnitBrowser.typed()
+    typedBrowser.parseFile()
+
+    assert(Cนักแสวงหา.การจับกุม.nonEmpty)
 
   }
 }

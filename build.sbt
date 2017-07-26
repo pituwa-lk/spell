@@ -11,7 +11,8 @@ lazy val crawler = project.
   settings(libraryDependencies ++= Seq(
     "org.scalaj" %% "scalaj-http" % "2.3.0",
     "org.scalactic" %% "scalactic" % "3.0.1",
-    "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+    "org.scalatest" %% "scalatest" % "3.0.1" % "test",
+    "net.ruippeixotog" %% "scala-scraper" % "2.0.0"
   )).
   settings(resolvers += "Artima Maven Repository" at "http://repo.artima.com/releases")
 

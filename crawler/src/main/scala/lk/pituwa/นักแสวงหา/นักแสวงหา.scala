@@ -8,8 +8,8 @@ import scalaj.http._
   * This comment block contains curse sentence for each time the zwj on (prefix or suffix) shifted chars and cause havoc
   *
   * අසර  වි ංංදචව දවඤසදච.වචට ද
-  * achigey redda thopi unicode walin sinhala kala thiyenney pako!!!
-  * //බලපන් පල්ල හා දාලතිය න තා යිබාසා වතාිම දවච ව
+  * achigey redda thopi unicode walin sinhala kala(කාලා\\පේනවනේ\\අනිත්\\අකුරු\\වලින්\\ලිව්වම\\නෑ\\තේරේන්නේ\\) thiyenney pako!!!
+  * //බලපන් පල්ල හා දාලතිය න තායිබාසා ගහපු\\අකුර\\වැදි\\ලා\\ඇති\\කාටහරි\\අමතකවලො\\කොන්ටුෝල්\\කීස්\\දාලා\\තියවා\\අගට\\ස්පේස්\\එබුවම\\අන්තිම\\අකුර\\පනිවවා\\
   * pakoooooo!!! penawada thopi zwj pukey araganin issara passta dala nikan guuu godak karaya pakooo!!!!
   *
   * 111777111
