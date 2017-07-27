@@ -16,12 +16,10 @@ class CaptureController {
     Future {
 
       val idx = new IndexController
-      //get body
-      //extract links
-      //get text
+
       val linkExtractor = new LinkExtractor
       val textExtractor = new TextExtractor
-      lk.Registry.registered.map(request => {
+      lk.Registry.registered.foreach(request => {
         val response = new Crawler(request).crawl
         val links = linkExtractor.extract(response)
         val texts = textExtractor.extract(response)

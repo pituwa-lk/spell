@@ -24,6 +24,7 @@ class Crawler(request: Request) {
     * @return
     */
   def crawl: Response = {
+    println("calling URI" + request.uri)
     val response: HttpResponse[String] = Http(request.uri).asString
     response.code match {
       case 200 => Response(request, response.body)
