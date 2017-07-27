@@ -1,6 +1,5 @@
 package lk.pituwa.capture
 
-import jdk.nashorn.internal.ir.RuntimeNode.Request
 import lk.pituwa.indexer.IndexController
 import lk.pituwa.model.Document
 import lk.pituwa.repository.LinkRepository
@@ -13,7 +12,7 @@ import scala.concurrent.Future
 class CaptureController {
 
   def run: Unit = {
-
+    import scala.concurrent.ExecutionContext.Implicits.global
     Future {
 
       val idx = new IndexController

@@ -31,8 +31,10 @@ lazy val models = project
     commonSettings
   ).
   settings(libraryDependencies ++= Seq(
-    "net.ruippeixotog" %% "scala-scraper" % "2.0.0"
-  ))
+    "net.ruippeixotog" %% "scala-scraper" % "2.0.0",
+    "io.lemonlabs" %% "scala-uri" % "0.4.16"
+  )).
+  settings(resolvers += "Artima Maven Repository" at "http://repo.artima.com/releases")
 
 
 lazy val frontend = project
@@ -45,7 +47,6 @@ lazy val frontend = project
     "com.typesafe.akka" %% "akka-http-spray-json" % "10.0.9"
   )).
   dependsOn(crawler)
-
 
 lazy val utils = project
   .settings(commonSettings).

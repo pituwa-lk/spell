@@ -10,7 +10,8 @@ import scala.concurrent.Future
   */
 class IndexController
 {
-  def accept(document: Document):Future[Boolean] = {
+  import scala.concurrent.ExecutionContext.Implicits.global
+  def accept(document: Document):Unit = {
     Future {
         //document.texts.isEmpty
       document.texts.map(sentence => {

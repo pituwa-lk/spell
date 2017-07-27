@@ -1,6 +1,6 @@
 package lk.pituwa.model
 
-import com.netaporter.uri.Uri._
+import com.netaporter.uri.Uri.parse
 
 
 /**
