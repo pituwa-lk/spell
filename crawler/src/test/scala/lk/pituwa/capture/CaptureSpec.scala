@@ -20,7 +20,7 @@ class CaptureSpec extends FlatSpec
     assert(sniffed.body === "text/html")
   }
 
-  "CapturedLinks" should "be parseable from link extractor" in {
+  "CapturedLinks" should "be parsable from link extractor" in {
     val crawler = new Crawler(lk.Registry.registered.head)
     val linkExtractor = new LinkExtractor()
     val z = linkExtractor.extract(crawler.crawl)
@@ -28,7 +28,7 @@ class CaptureSpec extends FlatSpec
     assert(z.head.startsWith("https://si.wikipedia.org/"))
   }
 
-  "CapturedText" should "be parseable from text extractor" in {
+  "CapturedText" should "be parsable from text extractor" in {
     val crawler = new Crawler(lk.Registry.registered.head)
     val textExtractor = new TextExtractor()
     val z = textExtractor.extract(crawler.crawl)
