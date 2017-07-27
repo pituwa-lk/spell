@@ -10,7 +10,7 @@ object WordRepository
     def add(word: String) = {
       words.get(word) match {
         case None => words += (word -> 1)
-        case Some(v) => words(word) += 1
+        case Some(v) => words.updated(word, v + 1)
       }
     }
 }

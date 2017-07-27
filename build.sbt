@@ -29,7 +29,23 @@ lazy val indexer = project
 lazy val models = project
   .settings(
     commonSettings
-  )
+  ).
+  settings(libraryDependencies ++= Seq(
+    "net.ruippeixotog" %% "scala-scraper" % "2.0.0"
+  ))
+
+
+lazy val frontend = project
+  .settings(
+    commonSettings
+  ).
+  settings(libraryDependencies ++= Seq(
+    "com.typesafe.akka" %% "akka-http" % "10.0.9",
+    "com.typesafe.akka" %% "akka-http-testkit" % "10.0.9" % Test,
+    "com.typesafe.akka" %% "akka-http-spray-json" % "10.0.9"
+  )).
+  dependsOn(crawler)
+
 
 lazy val utils = project
   .settings(commonSettings).

@@ -7,7 +7,7 @@ object LinkRepository
 {
     var links: List[String] = List()
 
-    def add(link: String): Unit = links += link
+    //def add(link: String): Unit = links += link
     def get: String = {
       val ret = links.head
       links = links.tail
