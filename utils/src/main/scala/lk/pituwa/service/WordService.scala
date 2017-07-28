@@ -17,7 +17,7 @@ object WordService {
   def getWordWithPrefix(prefix: String, delta: Int = 0):Future[List[String]] = {
     Future {
       val words = WordRepository.words.keys.toList.par
-      words.filter(word => { score(word, prefix) == (prefix.length - delta) } ).toList
+      words.filter(word => { score(word, prefix) == (prefix.length - delta) } ).toList.slice(0,10)
     }
   }
 

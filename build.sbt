@@ -17,7 +17,8 @@ lazy val commonSettings = Seq(
     "org.scalatest" %% "scalatest" % "3.0.1" % "test",
     "ch.qos.logback" % "logback-classic" % "1.2.3",
     "com.typesafe.scala-logging" %% "scala-logging" % "3.7.2",
-    "com.typesafe" % "config" % "1.3.1"
+    "com.typesafe" % "config" % "1.3.1",
+    "ch.megard" %% "akka-http-cors" % "0.2.1"
   ),
   resolvers += "Artima Maven Repository" at "http://repo.artima.com/releases",
   resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases"
