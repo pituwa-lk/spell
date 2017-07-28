@@ -1,5 +1,6 @@
 package lk.pituwa.capture
 
+import com.typesafe.scalalogging.Logger
 import lk.pituwa.model.{Request, Response}
 
 import scalaj.http._
@@ -19,15 +20,17 @@ import scalaj.http._
   * */
 class Crawler(request: Request) {
 
+  val logger = Logger("crawler")
   /**
     *
     * @return
     */
   def crawl: Response = {
-    println("calling URI" + request.uri)
-    val response: HttpResponse[String] = Http(request.uri).asString
+    logger.info("calling URI {}", request.uri)
+    val response: HttpResponse[String] = Http(request.uri).options(HttpOptions.followRedirects(true)).asString
     response.code match {
       case 200 => Response(request, response.body)
+      case 404 => Response(request, "")
       case _ => throw new Exception("server returned error" + response.code)
     }
   }

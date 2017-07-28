@@ -8,6 +8,7 @@ import scala.concurrent.Future
 /**
   * Created by Nayana on 27/7/17.
   */
+/*
 class IndexController
 {
   import scala.concurrent.ExecutionContext.Implicits.global
@@ -22,3 +23,4 @@ class IndexController
     }
   }
 }
+*/

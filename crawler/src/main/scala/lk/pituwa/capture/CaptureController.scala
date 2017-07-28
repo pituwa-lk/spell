@@ -1,6 +1,6 @@
 package lk.pituwa.capture
 
-import lk.pituwa.indexer.IndexController
+
 import lk.pituwa.model.Document
 import lk.pituwa.repository.LinkRepository
 
@@ -9,6 +9,7 @@ import scala.concurrent.Future
 /**
   * Created by nayana on 27/7/17.
   */
+/*
 class CaptureController {
 
   def run: Unit = {
@@ -34,3 +35,4 @@ class CaptureController {
     //send document for indexing
   }
 }
+*/

@@ -1,8 +1,9 @@
 package lk.pituwa.capture
 
-import akka.actor.{Actor, Props}
+import akka.actor.{Actor, ActorRef, Props}
+import lk.pituwa.capture.QueueActor.SendNext
 import lk.pituwa.model.{Document, Request}
-import lk.pituwa.repository.LinkRepository
+import lk.pituwa.repository.{LinkRepository, WordRepository}
 
 
 object CrawlActor {
@@ -22,10 +23,13 @@ class CrawlActor extends Actor {
   override def receive: Receive = {
     case Download(url) => {
       val response = new Crawler(Request(url)).crawl
+      LinkRepository.setCrawled(url)
       val links = linkExtractor.extract(response)
       val texts = textExtractor.extract(response)
       val document = Document(response, links, texts)
       LinkRepository.bulkAdd(document.links)
+      WordRepository.add(document.texts.mkString(" ").split(" ").toList)
+      WebServer.sendNext
     }
   }
 }

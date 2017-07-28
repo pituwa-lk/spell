@@ -3,6 +3,7 @@ package lk.pituwa.capture
 import javax.net.ssl.HostnameVerifier
 
 import com.netaporter.uri.Uri
+import com.typesafe.scalalogging.Logger
 import lk.pituwa.model.Response
 import net.ruippeixotog.scalascraper.browser.{HtmlUnitBrowser, JsoupBrowser}
 import net.ruippeixotog.scalascraper.browser.HtmlUnitBrowser._
@@ -14,6 +15,8 @@ import net.ruippeixotog.scalascraper.scraper._
   * Created by nayana on 27/7/17.
   */
 class LinkExtractor {
+
+  var logger = Logger("links")
 
   def extract(response: Response):List[String] = {
 
@@ -30,13 +33,13 @@ class LinkExtractor {
         })
       }
       case _ => List.empty
-    } ).filter(_.nonEmpty).map(link => {
+    } ).filter(_.nonEmpty).filter(!_.get.startsWith("#")).map(link => {
 
       import com.netaporter.uri.dsl._
       val vx: Uri = link.get
 
-      val prot = vx.protocol match {
-        case None => response.request.url.protocol.get
+      val prot = vx.scheme match {
+        case None => response.request.url.scheme.get
         case Some(prot) => prot
       }
 
@@ -49,6 +52,10 @@ class LinkExtractor {
       val query = vx.queryString
 
       prot + "://" + host + path + query
+    }).filter(p = v => {
+      import com.netaporter.uri.dsl._
+      val vx:Uri = v
+      vx.host.get == response.request.url.host.get
     })
   }
 }

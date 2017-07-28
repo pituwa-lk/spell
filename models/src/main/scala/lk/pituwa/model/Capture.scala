@@ -14,4 +14,4 @@ case class Request(uri: String) {
 }
 
 case class Response(request: Request, body: String)
-case class Document(response: Response, texts: List[String], links: List[String])
+case class Document(response: Response, links: List[String], texts: List[String])
