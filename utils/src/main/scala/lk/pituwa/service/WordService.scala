@@ -11,13 +11,26 @@ import scala.concurrent.Future
   */
 object WordService {
 
+  import scala.concurrent.ExecutionContext.Implicits.global
+
   //we can add a loop and return words based on min max criteria
-  def getWordWithPrefix(prefix: String):Future[List[String]] = {
+  def getWordWithPrefix(prefix: String, delta: Int = 0):Future[List[String]] = {
     Future {
-      val words: List[String] = WordRepository.words.keys.toList
-      val base = words.filter(z => z.charAt(0) == prefix.charAt(0))
-      val base2 = base.filter(z => z.charAt(1) == prefix.charAt(1))
-      base2
+      val words = WordRepository.words.keys.toList.par
+      words.filter(word => { score(word, prefix) == (prefix.length - delta) } ).toList
     }
+  }
+
+  def score(p1: String, p2: String, matched: Int = 0):Int = {
+    p1.charAt(0) == p2.charAt(0) match {
+      case true =>
+        if (p1.length > 1 && p2.length > 1) {
+          score(p1.substring(1), p2.substring(1), matched + 1)
+        } else {
+          matched + 1
+        }
+      case false => matched
+    }
+    //matched
   }
 }

@@ -10,7 +10,9 @@ import lk.pituwa.capture.QueueActor.SendNext
 import lk.pituwa.repository.{LinkRepository, WordRepository}
 import lk.pituwa.service.WordService
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import lk.pituwa.capture.DataActor.LoadData
 import spray.json.DefaultJsonProtocol._
+
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.io.StdIn
 
@@ -24,24 +26,26 @@ object ShutdownSave extends Thread {
 object WebServer {
 
   implicit val system = ActorSystem("pituwalk")
+
   val crawler: ActorRef = system.actorOf(Props[CrawlActor], "crawler")
   val queue: ActorRef = system.actorOf(Props(classOf[QueueActor], crawler), "queue")
+  val dataAct: ActorRef = system.actorOf(Props(classOf[DataActor], crawler), "dataAct")
+
   implicit val materializer = ActorMaterializer()
-  // needed for the future flatMap/onComplete in the end
   implicit val executionContext: ExecutionContextExecutor = system.dispatcher
 
   def main(args: Array[String]) {
 
     Runtime.getRuntime.addShutdownHook(ShutdownSave)
 
-    val route = path("lookup" / RemainingPath) { lookup => {
+    val route = path("lookup") { parameter('lookup) {
+      lookup => {
         get {
-          complete {
-            WordService.getWordWithPrefix(lookup.toString())
+          complete { WordService.getWordWithPrefix(lookup) }
           }
         }
       }
-      } ~ path("stats") {
+    } ~ path("stats") {
         get {
           complete {
             f"""{
@@ -52,9 +56,9 @@ object WebServer {
         }
       }
 
+    dataAct ! LoadData("Good Morning")
 
     val bindingFuture = Http().bindAndHandle(route, "0.0.0.0", 8080)
-    crawler ! Download(lk.Registry.registered.head.uri)
     println(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
     StdIn.readLine() // let it run until user presses return
     bindingFuture
