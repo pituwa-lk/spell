@@ -13,6 +13,13 @@ object WordService {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
+
+  def bulkLookup(words: List[String]):Future[Map[String,List[String]]] = {
+    Future.successful {
+      words.map(word => word -> WordRepository.getByPrefixName(word)).toMap
+    }
+  }
+
   //we can add a loop and return words based on min max criteria
   def getWordWithPrefix(prefix: String, delta: Int = 0):Future[List[String]] = {
     Future {
@@ -22,15 +29,17 @@ object WordService {
   }
 
   def score(p1: String, p2: String, matched: Int = 0):Int = {
-    p1.charAt(0) == p2.charAt(0) match {
-      case true =>
-        if (p1.length > 1 && p2.length > 1) {
-          score(p1.substring(1), p2.substring(1), matched + 1)
-        } else {
-          matched + 1
-        }
-      case false => matched
+    if (p1.length == 0 || p2.length == 0) matched
+    else {
+      p1.charAt(0) == p2.charAt(0) match {
+        case true =>
+          if (p1.length > 1 && p2.length > 1) {
+            score(p1.substring(1), p2.substring(1), matched + 1)
+          } else {
+            matched + 1
+          }
+        case false => matched
+      }
     }
-    //matched
   }
 }

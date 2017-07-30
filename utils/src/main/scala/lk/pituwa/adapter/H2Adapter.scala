@@ -1,6 +1,8 @@
 package lk.pituwa.adapter
 
-import java.sql.{Connection, DriverManager, ResultSet}
+import java.sql.{Connection, DriverManager, ResultSet, Statement}
+
+import com.typesafe.config.ConfigFactory
 
 
 object Implicits {
@@ -19,25 +21,34 @@ object Implicits {
   * Created by nayana on 28/7/17.
   */
 class H2Adapter {
-  val driver = "org.h2.Driver"
 
-  val url = "jdbc:h2:tcp://localhost/~/test"
+  lazy val config = ConfigFactory.load()
 
-  val username = "sa"
+  lazy val driver = config.getString("db.driver")
 
-  val password = ""
+  lazy val url = config.getString("db.url")
 
-  def execute(sql: String) = {
+  lazy val username = config.getString("db.username")
+
+  lazy val password = config.getString("db.password")
+
+  def execute(sql: String): Long = {
     var connection: Connection = null
+    var id:Long = 0
     try {
       Class.forName(driver)
       connection = DriverManager.getConnection(url, username, password)
       val statement = connection.createStatement()
       statement.execute(sql)
+      val genKeys = statement.getGeneratedKeys
+      if (genKeys.next()) {
+        id = genKeys.getLong(1)
+      }
     } catch {
-      case e => e.printStackTrace
+      case e:Throwable => e.printStackTrace
     }
     connection.close()
+    id
   }
 
   def select(sql: String): ResultSet = {
@@ -49,7 +60,7 @@ class H2Adapter {
       val statement = connection.createStatement()
       resultSet = statement.executeQuery(sql)
     } catch {
-      case e => e.printStackTrace
+      case e:Throwable => e.printStackTrace
     }
     //connection.close()
     resultSet

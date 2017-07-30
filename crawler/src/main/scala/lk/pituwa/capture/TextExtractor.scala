@@ -1,7 +1,7 @@
 package lk.pituwa.capture
 
 
-import lk.pituwa.model.Response
+import lk.pituwa.model.{InfoMap, Link, Response, Word}
 import net.ruippeixotog.scalascraper.browser.HtmlUnitBrowser
 import net.ruippeixotog.scalascraper.browser.HtmlUnitBrowser._
 import net.ruippeixotog.scalascraper.scraper.ContentExtractors._
@@ -20,7 +20,10 @@ class TextExtractor {
   def extract(response: Response):List[String] = {
 
     val browser: HtmlUnitBrowser = HtmlUnitBrowser.typed()
+    browser.underlying.getOptions.setJavaScriptEnabled(false)
     val doc: HtmlUnitDocument = browser.parseString(response.body)
-    doc >> pElementList("p") map { p:HtmlUnitElement => p.underlying.getTextContent }
+    val pText = doc >> allText("p")
+    val dText = doc >> allText("div")
+    (pText.split(" ") ++ dText.split(" ")).toList
   }
 }

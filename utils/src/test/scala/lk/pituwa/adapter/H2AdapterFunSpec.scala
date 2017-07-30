@@ -3,23 +3,6 @@ package lk.pituwa.adapter
 import lk.pituwa.repository.{LinkRepository, WordRepository}
 import org.scalatest.FlatSpec
 
-import scala.concurrent.Future
-
-import java.sql.ResultSet
-
-object Implicits {
-
-  implicit class ResultSetStream(resultSet: ResultSet) {
-
-    def toStream: Stream[ResultSet] = {
-      new Iterator[ResultSet] {
-        def hasNext = resultSet.next()
-
-        def next() = resultSet
-      }.toStream
-    }
-  }
-}
 
 /**
   * Created by nayana on 28/7/17.
@@ -28,7 +11,7 @@ class H2AdapterFunSpec extends FlatSpec {
 
   "adapter" should "create table" in {
     val db = new H2Adapter
-    db.execute("CREATE TABLE word (word CHAR(100) PRIMARY KEY, count INT)")
+    db.execute("CREATE TABLE foobar (word CHAR(100) PRIMARY KEY, count INT)")
     assert(true)
   }
 
@@ -41,8 +24,9 @@ class H2AdapterFunSpec extends FlatSpec {
 
   "std repo" should "insert record" in {
     val db = new H2Adapter
-    db.execute("""INSERT INTO WORD (word, count) VALUES ('පියා', '1') """)
-    assert(true)
+    WordRepository.init
+    val id = db.execute("""INSERT INTO WORD (word, count) VALUES ('පියා', '1')""")
+    assert(id > 0)
   }
 
   def score(p1: String, p2: String, matched: Int = 0):Int = {

@@ -4,7 +4,7 @@ import javax.net.ssl.HostnameVerifier
 
 import com.netaporter.uri.Uri
 import com.typesafe.scalalogging.Logger
-import lk.pituwa.model.Response
+import lk.pituwa.model.{Link, Response}
 import net.ruippeixotog.scalascraper.browser.{HtmlUnitBrowser, JsoupBrowser}
 import net.ruippeixotog.scalascraper.browser.HtmlUnitBrowser._
 import net.ruippeixotog.scalascraper.dsl.DSL._
@@ -21,6 +21,7 @@ class LinkExtractor {
   def extract(response: Response):List[String] = {
 
     val browser: HtmlUnitBrowser = HtmlUnitBrowser.typed()
+    browser.underlying.getOptions.setJavaScriptEnabled(false)
     val doc: HtmlUnitDocument = browser.parseString(response.body)
     ( doc >> pElementList("a") match {
       case elms: List[HtmlUnitElement] => {
@@ -40,12 +41,12 @@ class LinkExtractor {
 
       val prot = vx.scheme match {
         case None => response.request.url.scheme.get
-        case Some(prot) => prot
+        case Some(protx) => protx
       }
 
       val host = vx.host match {
         case None => response.request.url.host.get
-        case Some(host) => host
+        case Some(hostx) => hostx
       }
 
       val path = vx.path
