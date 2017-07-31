@@ -5,6 +5,7 @@ import com.typesafe.scalalogging.Logger
 import lk.pituwa.capture.CrawlActor.Download
 import lk.pituwa.capture.QueueActor.SendFirst
 import lk.pituwa.model.Link
+import lk.pituwa.pdf.DocumentExtraActor
 import lk.pituwa.repository.{DocumentRepository, InfoMapRepository, LinkRepository, WordRepository}
 
 /**
@@ -44,7 +45,7 @@ class DataActor(queueActor: ActorRef) extends Actor {
       infoMapRepo.infoMaps = infoMapRepo.boot.toList
       docRepo.documents = docRepo.boot.toList
       logger.info("Finished loading data with h2")
-      //queueActor ! SendFirst
+      queueActor ! SendFirst
     }
   }
 }

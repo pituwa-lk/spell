@@ -2,6 +2,7 @@ package lk.pituwa.service
 
 
 
+import com.rockymadden.stringmetric.similarity.JaroWinklerMetric
 import lk.pituwa.repository.WordRepository
 
 import scala.concurrent.Future
@@ -16,7 +17,10 @@ object WordService {
 
   def bulkLookup(words: List[String]):Future[Map[String,List[String]]] = {
     Future.successful {
-      words.map(word => word -> WordRepository.getByPrefixName(word)).toMap
+      //words.map(word => word -> WordRepository.getByPrefixName(word)).toMap
+      words.map(
+        word => word -> WordRepository.similar(word).sortBy(p2 => JaroWinklerMetric.compare(word, p2).get)
+      ).toMap
     }
   }
 

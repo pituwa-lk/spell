@@ -1,5 +1,6 @@
 package lk.pituwa.repository
 
+import com.rockymadden.stringmetric.similarity.JaroWinklerMetric
 import com.typesafe.scalalogging.Logger
 import lk.pituwa.adapter.H2Adapter
 import lk.pituwa.model.Word
@@ -27,6 +28,15 @@ object WordRepository
     val db = new H2Adapter
     val rs = db.select(s"SELECT * FROM WORD")
     rs.toStream.map(v => { v.getString("WORD") -> Word(v.getString("WORD"), v.getInt("ID"), v.getInt("COUNT"))}).toMap
+  }
+
+  def similar(p1: String):List[String] = {
+      words.keys.filter(p2 => {
+        JaroWinklerMetric.compare(p1, p2) match {
+          case None => false
+          case Some(e) => if (e > 0.9) true else false
+        }
+      }).toList
   }
 
   def add(filtered: List[Word]):Unit = {
@@ -112,7 +122,7 @@ object WordRepository
     word
   }
 
-  def save = {
+  def save = Future {
     words.foreach(v => {
       val db = new H2Adapter
       val rs = db.select(s"SELECT word FROM WORD WHERE word = '${v._1}'")

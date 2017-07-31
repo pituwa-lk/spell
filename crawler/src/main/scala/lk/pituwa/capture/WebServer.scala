@@ -38,7 +38,7 @@ object WebServer {
   val dataAct: ActorRef = system.actorOf(Props(classOf[DataActor], queue), "dataAct")
   val documentor: ActorRef = system.actorOf(Props(new DocumentExtraActor), name = "documentor")
 
-  //system.scheduler.schedule(1 minutes, 1 minutes, documentor, DocumentExtraActor.Peak())
+  //system.scheduler.schedule(90 seconds, 1 minutes, documentor, DocumentExtraActor.Peak())
 
   def main(args: Array[String]) {
 

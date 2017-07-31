@@ -15,11 +15,11 @@ object DocumentRepository
   ////0d80 3456 - 0DFF 3583
   val logger = Logger("documents")
 
-  val drop = "dropbox"
+  val drop = "proc"
 
   var documents:List[String] = List[String]()
 
-  lazy val files: List[File]  = {
+  val files: List[File]  = {
     val d = new File(drop)
     if (d.exists && d.isDirectory) {
       d.listFiles.filter(_.isFile).toList

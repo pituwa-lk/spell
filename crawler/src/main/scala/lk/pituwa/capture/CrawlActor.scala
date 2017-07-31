@@ -1,10 +1,12 @@
 package lk.pituwa.capture
 
 import akka.actor.{Actor, ActorRef, Props}
+import com.netaporter.uri.decoding.UriDecodeException
 import com.typesafe.scalalogging.Logger
 import lk.pituwa.capture.QueueActor.SendNext
 import lk.pituwa.model._
 import lk.pituwa.repository.{InfoMapRepository, LinkRepository, WWWDocumentRepository, WordRepository}
+
 import scala.concurrent.Future
 
 object CrawlActor {
@@ -35,7 +37,16 @@ class CrawlActor extends Actor {
         InfoMap(Some(Word(v)), Some(response.request.uri))
       })
       logger.info("WebWord size is {}", infoMap.size)
-      val links = linkExtractor.extract(response).distinct.map(v => Link(LinkRepository.sanitize(v)))
+      val links = linkExtractor.extract(response).distinct.map(v => {
+        try {
+          Some(Link(LinkRepository.sanitize(v)))
+        } catch {
+          case e:UriDecodeException => {
+            logger.info("bad link found {}", v)
+            None
+          }
+        }
+      }).filter(_.nonEmpty).map(_.get)
       val document = Document(response, links, infoMap)
       LinkRepository.setCrawled(url)
       LinkRepository.bulkAdd(document.links)
