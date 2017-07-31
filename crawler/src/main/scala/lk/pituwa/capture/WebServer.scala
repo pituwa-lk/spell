@@ -20,8 +20,8 @@ import scala.io.StdIn
 
 object ShutdownSave extends Thread {
   override def run = {
-    //LinkRepository.save
-    //WordRepository.save
+    LinkRepository.save
+    WordRepository.save
   }
 }
 

@@ -27,11 +27,17 @@ class Crawler(request: Request) {
     */
   def crawl: Response = {
     logger.info("calling URI {}", request.uri.link)
-    val response: HttpResponse[String] = Http(request.uri.link).timeout(5000, 5000).options(HttpOptions.followRedirects(true)).asString
-    response.code match {
-      case 200 => Response(request, response.body)
-      case 404 => Response(request, "")
-      case _ => throw new Exception("server returned error" + response.code)
+    try {
+      val response: HttpResponse[String] = Http(request.uri.link).timeout(5000, 5000).options(HttpOptions.followRedirects(true)).asString
+      response.code match {
+        case 200 => Response(request, response.body)
+        case 404 => Response(request, "")
+        case _ => Response(request, "")
+      }
+    } catch  {
+      case e:Exception => {
+        Response(request, "")
+      }
     }
   }
 

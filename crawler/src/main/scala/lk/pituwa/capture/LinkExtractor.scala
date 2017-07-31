@@ -3,6 +3,7 @@ package lk.pituwa.capture
 import javax.net.ssl.HostnameVerifier
 
 import com.netaporter.uri.Uri
+import com.netaporter.uri.decoding.UriDecodeException
 import com.typesafe.scalalogging.Logger
 import lk.pituwa.model.{Link, Response}
 import net.ruippeixotog.scalascraper.browser.{HtmlUnitBrowser, JsoupBrowser}
@@ -35,9 +36,17 @@ class LinkExtractor {
       }
       case _ => List.empty
     } ).filter(_.nonEmpty).filter(!_.get.startsWith("#")).map(link => {
-
       import com.netaporter.uri.dsl._
-      val vx: Uri = link.get
+      try {
+        val vx: Uri = link.get
+        Right(vx)
+      } catch {
+        case e:UriDecodeException => {
+          logger.info("error on url {}", link.get)
+          Left(e)
+        }
+      }
+    }).map(_.right.toOption).filter(_.nonEmpty).map(_.get).map(vx => {
 
       val prot = vx.scheme match {
         case None => response.request.url.scheme.get
