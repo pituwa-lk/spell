@@ -1,6 +1,6 @@
 package lk.pituwa.adapter
 
-import java.sql.{Connection, DriverManager, ResultSet, Statement}
+import java.sql.{Connection, DriverManager, ResultSet}
 
 import com.typesafe.config.ConfigFactory
 
@@ -10,7 +10,15 @@ object Implicits {
 
     def toStream: Stream[ResultSet] = {
       new Iterator[ResultSet] {
-        def hasNext = resultSet.next()
+        def hasNext = {
+          resultSet.next() match {
+            case true => true
+            case false => {
+              resultSet.getStatement.getConnection.close()
+              false
+            }
+          }
+        }
 
         def next() = resultSet
       }.toStream
