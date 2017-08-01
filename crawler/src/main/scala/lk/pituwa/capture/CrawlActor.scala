@@ -13,7 +13,7 @@ object CrawlActor {
   def props: Props = Props[CrawlActor]
 
   trait Message
-  final case class Download(url: Link) extends Message
+  final case class Download(url: String) extends Message
 }
 
 class CrawlActor extends Actor {
@@ -33,13 +33,11 @@ class CrawlActor extends Actor {
       import scala.concurrent.ExecutionContext.Implicits.global
 
       val response = new Crawler(Request(url)).crawl
-      val infoMap = textExtractor.extract(response).filter(_.matches("""^[\u0D80-\u0DFF\u200D]+$""")).distinct.map(v => {
-        InfoMap(Some(Word(v)), Some(response.request.uri))
-      })
-      logger.info("WebWord size is {}", infoMap.size)
+      val words = textExtractor.extract(response).filter(_.matches("""^[\u0D80-\u0DFF\u200D]+$""")).distinct
+      logger.info("WebWord size is {}", words.size)
       val links = linkExtractor.extract(response).distinct.map(v => {
         try {
-          Some(Link(LinkRepository.sanitize(v)))
+          Some(LinkRepository.sanitize(v))
         } catch {
           case e:UriDecodeException => {
             logger.info("bad link found {}", v)
@@ -47,15 +45,10 @@ class CrawlActor extends Actor {
           }
         }
       }).filter(_.nonEmpty).map(_.get)
-      val document = Document(response, links, infoMap)
-      LinkRepository.setCrawled(url)
-      LinkRepository.bulkAdd(document.links)
-      WordRepository.add(document.infoMap.map(v => v.word.get))
-      Future {
-        document.infoMap.foreach(imp => {
-          InfoMapRepository.add(imp)
-        })
-      }
+      //val document = Document(response, links, infoMap)
+      LinkRepository.setCrawled(response.request.uri)
+      LinkRepository.bulkAdd(links)
+      WordRepository.add(words)
       sender() ! SendNext
     }
   }

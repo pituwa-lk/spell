@@ -21,13 +21,13 @@ object WordRepository
 
   val sinhala = "^[\\u0D80-\\u0DFF\\u200D]+$".r
 
-  var words: Map[String, Word] = Map()
+  var words: Map[String, Int] = Map()
 
   //TODO: have some test data
   lazy val boot = {
     val db = new H2Adapter
     val rs = db.select(s"SELECT * FROM WORD")
-    rs.toStream.map(v => { v.getString("WORD") -> Word(v.getString("WORD"), v.getInt("ID"), v.getInt("COUNT"))}).toMap
+    rs.toStream.map(v => { v.getString("WORD") -> v.getInt("COUNT") } ).toMap
   }
 
   def similar(p1: String):List[String] = {
@@ -39,30 +39,24 @@ object WordRepository
       }).toList
   }
 
-  def add(filtered: List[Word]):Unit = {
+  def add(filtered: List[String]):Unit = {
     logger.info("adding word to dictionary {}", words.size)
     //val filtered = newWords.filter(_.word.matches("""^[\u0D80-\u0DFF\u200D]+$"""))
     //val trash = newWords.filter(_.word.matches("""^[^\u0D80-\u0DFF\u200D]+$"""))
     logger.info("size after filter range {}", filtered.size)
 
     filtered.map(v => {
-      v.count += 1
-      words = words.updated(v.word, v)
-      Future {
-        isInDb(v) match {
-          case true => {
-            v
-          }
-          case false => {
-            saveOne(v).map(v => {
-              v
-            })
-          }
-        }
-        v
+      val count = words.get(v) match {
+        case Some(x) => x
+        case None => 0
+      }
+      words = words.updated(v, count + 1)
+      isInDb(v) match {
+          case true => { v }
+          case false => { saveOne(v) }
       }
     })
-  }
+    }
 
   def init = {
     val db = new H2Adapter
@@ -70,9 +64,9 @@ object WordRepository
     db.execute("CREATE TABLE IF NOT EXISTS TRASH (WORD CHAR(100) NOT NULL, COUNT INT, ID INT DEFAULT NOT NULL PRIMARY KEY AUTO_INCREMENT)")
   }
 
-  def isInDb(word: Word): Boolean = {
+  def isInDb(word: String): Boolean = {
     val db = new H2Adapter
-    db.select(s"""SELECT ID FROM WORD WHERE WORD = '${word.word}' """).toStream.nonEmpty
+    db.select(s"""SELECT ID FROM WORD WHERE WORD = '${word}' """).toStream.nonEmpty
   }
 
   def getByPrefixName(prefix: String):List[String] = {
@@ -88,13 +82,13 @@ object WordRepository
     List("aaa")
   }
 
-  def getByName(word: String):Word = {
+  def getByName(word: String):String = {
     val db = new H2Adapter
     val rs = db.select(s"SELECT WORD, ID, COUNT FROM WORD WHERE WORD = '${word}'").toStream.head
-    Word(rs.getString("WORD"), rs.getInt("ID"), rs.getInt("COUNT"))
+    rs.getString("WORD")
   }
 
-  def getById(id : Int):Option[Word] = {
+  /*def getById(id : Int):Option[Word] = {
     val db = new H2Adapter
     val rs = db.select(s"SELECT word FROM WORD WHERE ID = '${id}'").toStream.headOption
     rs match {
@@ -104,7 +98,7 @@ object WordRepository
         words.get(word)
       }
     }
-  }
+  }*/
 
   def saveTrash(word: Word): Word = {
     val db = new H2Adapter
@@ -114,10 +108,10 @@ object WordRepository
     word
   }
 
-  def saveOne(word: Word): Future[Word] = Future{
+  def saveOne(word: String): Future[String] = Future{
     val db = new H2Adapter
-    if (word.id == 0 && !isInDb(word)) {
-        word.id = db.execute(s"""INSERT INTO WORD (WORD, COUNT) VALUES ('${word.word}', 1)""").toInt
+    if (!isInDb(word)) {
+        db.execute(s"""INSERT INTO WORD (WORD, COUNT) VALUES ('${word}', 1)""").toInt
     }
     word
   }
@@ -128,7 +122,7 @@ object WordRepository
       val rs = db.select(s"SELECT word FROM WORD WHERE word = '${v._1}'")
       rs.toStream.size match {
         case 0 => {
-          v._2.id =  db.execute(s"""INSERT INTO WORD (word, count) VALUES ('${v._1}', '${v._2.count}')""").toInt
+          val id  =  db.execute(s"""INSERT INTO WORD (word, count) VALUES ('${v._1}', '${v._2}')""").toInt
         }
         case _ => db.execute("SELECT 1")
       }

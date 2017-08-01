@@ -16,13 +16,13 @@ object InfoMapRepository
 
     var infoMaps: List[InfoMap] = List[InfoMap]()
 
-    lazy val boot = {
+    /*lazy val boot = {
       val db = new H2Adapter
       val rs = db.select(s"SELECT * FROM MAP")
       rs.toStream.map(v => {
         InfoMap(link = LinkRepository.getById(v.getInt("LINK_ID")), word = WordRepository.getById(v.getInt("WORD_ID")))
       })
-    }
+    }*/
 
     def init = {
       val db = new H2Adapter
@@ -34,7 +34,7 @@ object InfoMapRepository
                    |);""".stripMargin)
     }
 
-  def add(linfoMap: InfoMap): Unit = {
+  /*def add(linfoMap: InfoMap): Unit = {
     val wordId = linfoMap.word.get.id match {
       case 0 => WordRepository.getByName(linfoMap.word.get.word).id
       case _ => linfoMap.word.get.id
@@ -44,7 +44,7 @@ object InfoMapRepository
       val db = new H2Adapter
       if (!isInDb(linfoMap)) db.execute(s"""INSERT INTO MAP (WORD_ID, LINK_ID) VALUES ('${wordId}', '${linfoMap.link.get.id}')""")
     }
-  }
+  }*/
 
   def isInDb(infoMap: InfoMap):Boolean = {
     val db = new H2Adapter

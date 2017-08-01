@@ -42,8 +42,8 @@ class DataActor(queueActor: ActorRef) extends Actor {
       linkRepo.links   = linkRepo.nonVisited.toList
       linkRepo.crawled = linkRepo.visited.toList
       textRepo.words   = textRepo.boot
-      infoMapRepo.infoMaps = infoMapRepo.boot.toList
-      docRepo.documents = docRepo.boot.toList
+      //infoMapRepo.infoMaps = infoMapRepo.boot.toList
+      //docRepo.documents = docRepo.boot.toList
       logger.info("Finished loading data with h2")
       queueActor ! SendFirst
     }

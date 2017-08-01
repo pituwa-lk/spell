@@ -604,7 +604,7 @@ class DocumentExtraActor extends Actor {
         stripper.setEndPage(page)
         val txt = Some(stripper.getText(pdf))
         val revised = transform(txt.get)
-        val potential = revised.split(" ").filter(_.matches("""^[\u0D80-\u0DFF\u200D]+$""")).map(v => Word(word = v)).toList
+        val potential = revised.split(" ").filter(_.matches("""^[\u0D80-\u0DFF\u200D]+$""")).toList
         logger.info(s"""Attempting to Add ${potential.size} of words""")
         WordRepository.add(potential) //this may or may not belong here
       }

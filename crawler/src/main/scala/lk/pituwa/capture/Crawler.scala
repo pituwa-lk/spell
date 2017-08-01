@@ -26,9 +26,9 @@ class Crawler(request: Request) {
     * @return
     */
   def crawl: Response = {
-    logger.info("calling URI {}", request.uri.link)
+    logger.info("calling URI {}", request.uri)
     try {
-      val response: HttpResponse[String] = Http(request.uri.link).timeout(5000, 5000).options(HttpOptions.followRedirects(true)).asString
+      val response: HttpResponse[String] = Http(request.uri).timeout(5000, 5000).options(HttpOptions.followRedirects(true)).asString
       response.code match {
         case 200 => Response(request, response.body)
         case 404 => Response(request, "")
@@ -42,7 +42,7 @@ class Crawler(request: Request) {
   }
 
   def sniff: Response = {
-    val response: HttpResponse[String] = Http(request.uri.link).method("HEAD").asString
+    val response: HttpResponse[String] = Http(request.uri).method("HEAD").asString
     response.code match {
       case 200 => response.header("Content-Type") match {
         case Some(header) => Response(request, header)

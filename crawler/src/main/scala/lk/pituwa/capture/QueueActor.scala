@@ -23,7 +23,7 @@ class QueueActor(crawler: ActorRef) extends Actor {
 
   override def receive: Receive = {
     case SendFirst => {
-      crawler ! Download(Link(link = "http://www.lankadeepa.lk/"))
+      crawler ! Download("http://www.lankadeepa.lk/")
     }
     case SendNext => {
       val url = LinkRepository.get
