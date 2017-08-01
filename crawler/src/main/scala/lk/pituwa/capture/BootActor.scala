@@ -2,25 +2,22 @@ package lk.pituwa.capture
 
 import akka.actor.{Actor, ActorRef, Props}
 import com.typesafe.scalalogging.Logger
-import lk.pituwa.capture.CrawlActor.Download
 import lk.pituwa.capture.QueueActor.SendFirst
-import lk.pituwa.model.Link
-import lk.pituwa.pdf.DocumentExtraActor
 import lk.pituwa.repository.{DocumentRepository, InfoMapRepository, LinkRepository, WordRepository}
 
 /**
   * Created by nayana on 28/7/17.
   */
-object DataActor {
-  def props: Props = Props[DataActor]
+object BootActor {
+  def props: Props = Props[BootActor]
 
   trait Message
   final case class LoadData(p: String) extends Message
   final case class Initialize()
 }
 
-class DataActor(queueActor: ActorRef) extends Actor {
-  import DataActor._
+class BootActor(queueActor: ActorRef) extends Actor {
+  import BootActor._
 
   val logger = Logger("Data Actor")
 

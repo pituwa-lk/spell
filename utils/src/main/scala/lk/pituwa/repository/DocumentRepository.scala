@@ -1,7 +1,5 @@
 package lk.pituwa.repository
 
-import java.io.File
-
 import com.typesafe.scalalogging.Logger
 import lk.pituwa.adapter.H2Adapter
 import lk.pituwa.utils.FileOps
@@ -11,26 +9,26 @@ import lk.pituwa.utils.FileOps
   */
 object DocumentRepository
 {
-  import lk.pituwa.adapter.Implicits._
   ////0d80 3456 - 0DFF 3583
   val logger = Logger("documents")
 
   val drop = "proc"
 
-  var documents:List[String] = List[String]()
+  //URL + TEXT
+  //var documents:List[String] = List[String]()
 
-  val files: List[File]  = {
+/*  val files: List[File]  = {
     val d = new File(drop)
     if (d.exists && d.isDirectory) {
       d.listFiles.filter(_.isFile).toList
     } else {
       List[File]()
     }
-  }
+  }*/
 
-  def processed(file: File): Unit = {
+/*  def processed(file: File): Unit = {
     import java.io.File
-    import java.nio.file.{Files, Path, StandardCopyOption}
+    import java.nio.file.{Files, StandardCopyOption}
 
     val hash = FileOps.computeHash(file.toPath.toString)
     val d1 = file.toPath
@@ -41,21 +39,32 @@ object DocumentRepository
     val db = new H2Adapter
     db.execute(s"""INSERT INTO DOCUMENT (DOCUMENT) VALUES ('${hash}')""")
     documents ++= List(hash)
-  }
+  }*/
+
+  import lk.pituwa.adapter.Implicits._
 
   def init = {
     val db = new H2Adapter
-    db.execute("CREATE TABLE IF NOT EXISTS DOCUMENT (id INT AUTO_INCREMENT UNIQUE , DOCUMENT CHAR(256) PRIMARY KEY);")
+    db.execute(
+      """CREATE TABLE IF NOT EXISTS WEB_PAGE
+        |(ID INT AUTO_INCREMENT UNIQUE,
+        | DOC_ID CHAR(256) PRIMARY KEY,
+        | URL CHAR(256), TEXT_BODY CLOB);""".stripMargin)
   }
 
-  lazy val boot = {
-    val db = new H2Adapter
-    db.select("SELECT DOCUMENT FROM DOCUMENT").toStream.map(v => {
-      v.getString("DOCUMENT")
-    })
-  }
+    def isInDb(text: String):Boolean = {
+      val hash = FileOps.md5String(text)
+      val sql = s"""SELECT * FROM WEB_PAGE WHERE DOC_ID = '$hash'"""
+      val db = new H2Adapter
+      db.select(sql).toStream.nonEmpty
+    }
 
-  def save = {
-
-  }
+    def add(text: String, url: String) = {
+      if (isInDb(text)) {
+        val hash = FileOps.md5String(text)
+        val sql = s"""INSERT INTO WEB_PAGE (DOC_ID, URL, TEXT_BODY) VALUES ('$hash', '$text', '$url')"""
+        val db = new H2Adapter
+        db.execute(sql)
+      }
+    }
 }

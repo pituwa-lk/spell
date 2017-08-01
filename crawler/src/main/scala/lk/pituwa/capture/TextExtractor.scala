@@ -1,15 +1,11 @@
 package lk.pituwa.capture
 
 
-import lk.pituwa.model.{InfoMap, Link, Response, Word}
+import lk.pituwa.model.Response
 import net.ruippeixotog.scalascraper.browser.HtmlUnitBrowser
 import net.ruippeixotog.scalascraper.browser.HtmlUnitBrowser._
-import net.ruippeixotog.scalascraper.scraper.ContentExtractors._
-import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
-import net.ruippeixotog.scalascraper.dsl.DSL.Parse._
-import net.ruippeixotog.scalascraper.model._
-import org.w3c.dom.html.HTMLParagraphElement
+import net.ruippeixotog.scalascraper.dsl.DSL._
 
 
 /**
@@ -17,13 +13,13 @@ import org.w3c.dom.html.HTMLParagraphElement
   */
 class TextExtractor {
 
-  def extract(response: Response):List[String] = {
+  def extract(response: Response):String = {
 
     val browser: HtmlUnitBrowser = HtmlUnitBrowser.typed()
     browser.underlying.getOptions.setJavaScriptEnabled(false)
     val doc: HtmlUnitDocument = browser.parseString(response.body)
     val pText = doc >> allText("p")
     val dText = doc >> allText("div")
-    (pText.split(" ") ++ dText.split(" ")).toList
+    pText + " " + dText
   }
 }

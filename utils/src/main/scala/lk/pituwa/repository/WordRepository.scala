@@ -39,24 +39,15 @@ object WordRepository
       }).toList
   }
 
-  def add(filtered: List[String]):Unit = {
+  def add(filtered: List[String], domain: String):Unit = {
     logger.info("adding word to dictionary {}", words.size)
-    //val filtered = newWords.filter(_.word.matches("""^[\u0D80-\u0DFF\u200D]+$"""))
-    //val trash = newWords.filter(_.word.matches("""^[^\u0D80-\u0DFF\u200D]+$"""))
     logger.info("size after filter range {}", filtered.size)
 
-    filtered.map(v => {
-      val count = words.get(v) match {
-        case Some(x) => x
-        case None => 0
-      }
-      words = words.updated(v, count + 1)
-      isInDb(v) match {
-          case true => { v }
-          case false => { saveOne(v) }
-      }
+    filtered.foreach(v => {
+        saveOne(v)
+        InfoMapRepository.add(v, domain)
     })
-    }
+  }
 
   def init = {
     val db = new H2Adapter
@@ -88,18 +79,6 @@ object WordRepository
     rs.getString("WORD")
   }
 
-  /*def getById(id : Int):Option[Word] = {
-    val db = new H2Adapter
-    val rs = db.select(s"SELECT word FROM WORD WHERE ID = '${id}'").toStream.headOption
-    rs match {
-      case None => None
-      case _ => {
-        val word = rs.get.getString("WORD")
-        words.get(word)
-      }
-    }
-  }*/
-
   def saveTrash(word: Word): Word = {
     val db = new H2Adapter
     if (word.id == 0) {
@@ -108,12 +87,13 @@ object WordRepository
     word
   }
 
-  def saveOne(word: String): Future[String] = Future{
+  def saveOne(word: String): Unit = {
     val db = new H2Adapter
     if (!isInDb(word)) {
-        db.execute(s"""INSERT INTO WORD (WORD, COUNT) VALUES ('${word}', 1)""").toInt
+        db.execute(s"""INSERT INTO WORD (WORD, COUNT) VALUES ('${word}', 1)""")
+    } else {
+      db.execute(s"""UPDATE WORD SET COUNT = COUNT + 1 WHERE WORD ='${word}'""")
     }
-    word
   }
 
   def save = Future {

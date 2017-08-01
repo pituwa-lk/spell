@@ -1,8 +1,6 @@
 package lk.pituwa.capture
 
 import lk.pituwa.model._
-import lk.pituwa.repository.{InfoMapRepository, LinkRepository, WWWDocumentRepository, WordRepository}
-import lk.pituwa.utils.LanguageDetector
 import org.scalatest.FlatSpec
 
 /**
@@ -27,7 +25,7 @@ class CaptureSpec extends FlatSpec
 
     val textExtractor = new TextExtractor
     val response = new Crawler(Request("http://www.sinhalabuddhist.com/2014/11/islam-sharia-banking.html?showComment=1415070924582")).crawl
-    val word = textExtractor.extract(response).filter(_.matches("""^[\u0D80-\u0DFF\u200D]+$""")).distinct.toList
+    val word = textExtractor.extract(response).split(" ").toList.filter(_.matches("""^[\u0D80-\u0DFF\u200D]+$""")).distinct.toList
 
     val pgraph = """ලංකාවේ බැංකු කටයුතු පාලනය වන 1988 අංක 30 දරණ බැංකු කටයුතු පිළිබද පනත ඉස්ලාමීය බැංකුකරණයට ඉඩ සලසමින් සංශෝධනය වන්නේ 2005 දෙසැම්බර් මාසයේ දහ වැනිදාය. ඒ අනුව අමානා ඉස්ලාමීය මූල්‍ය සමාගම මුල් වරට ලංකාවේ සිය මෙහෙයුම් ආරම්භ කරමින් ඉස්ලාමීය ශරීයා බැංකු ක්‍රමය ලංකාවට හදුන්වා දෙන්නේ 2011 දී ය. රටටම හොර රහසේ තනිකරම ශරීයා නීතියට අනුගත මූල්‍ය ක්‍රමය පමණක් අනුගමනය කරන මෙම ආයතනයෙන් පමණක් ඇරඹි ශරීයාකරණය මේ වන විට රාජ්‍ය බැංකු හා පුද්ගලික මූල්‍ය ආයතන විස්සකට වැඩි ප්‍රමාණයක ක්‍රියාත්මක කර ඇති බව කියවේ."""
 
