@@ -1,6 +1,6 @@
 package lk.pituwa.repository
 
-import com.rockymadden.stringmetric.similarity.JaroWinklerMetric
+import com.rockymadden.stringmetric.similarity.{HammingMetric, JaroWinklerMetric, LevenshteinMetric}
 import com.typesafe.scalalogging.Logger
 import lk.pituwa.adapter.H2Adapter
 import lk.pituwa.model.Word
@@ -34,9 +34,22 @@ object WordRepository
       words.keys.filter(p2 => {
         JaroWinklerMetric.compare(p1, p2) match {
           case None => false
-          case Some(e) => if (e > 0.9) true else false
+          case Some(e) => if (e > 0.90) true else false
         }
       }).toList
+  }
+
+  def jaroAndHamming(p1: String):List[String] = {
+    similar(p1).intersect(hamming(p1))
+  }
+
+  def hamming(p1: String):List[String] = {
+    words.keys.filter(p2 => {
+      LevenshteinMetric.compare(p1, p2) match {
+        case None => false
+        case Some(e) => if (e >= 0 && e <= 4) true else false
+      }
+    }).toList
   }
 
   def add(filtered: List[String], domain: String):Unit = {
@@ -45,8 +58,10 @@ object WordRepository
 
     filtered.foreach(v => {
         saveOne(v)
-        InfoMapRepository.add(v, domain)
+        //InfoMapRepository.add(v, domain)
+      words = words.updated(v, 1)
     })
+
   }
 
   def init = {
@@ -92,7 +107,7 @@ object WordRepository
     if (!isInDb(word)) {
         db.execute(s"""INSERT INTO WORD (WORD, COUNT) VALUES ('${word}', 1)""")
     } else {
-      db.execute(s"""UPDATE WORD SET COUNT = COUNT + 1 WHERE WORD ='${word}'""")
+      //db.execute(s"""UPDATE WORD SET COUNT = COUNT + 1 WHERE WORD ='${word}'""")
     }
   }
 

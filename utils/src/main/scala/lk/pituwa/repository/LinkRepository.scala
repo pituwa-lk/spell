@@ -29,9 +29,9 @@ object LinkRepository
 
   var service = 0
 
-  def get: String = {
-    val ret = links.head
-    links = links.tail
+  def get:Option[String] = {
+    val ret = links.headOption
+    if (links.nonEmpty) links = links.tail
     ret
   }
 

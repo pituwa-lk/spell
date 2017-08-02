@@ -43,7 +43,7 @@ class CrawlActor extends Actor {
       LinkRepository.setCrawled(response.request.uri)
       LinkRepository.bulkAdd(links)
       WordRepository.add(words, response.request.url.host.get)
-      DocumentRepository.add(textBody, response.request.uri)
+      //DocumentRepository.add(textBody.filter(_.matches("""^[\u0D80-\u0DFF\u200D]+$""")), response.request.uri)
       sender() ! SendNext
     }
   }

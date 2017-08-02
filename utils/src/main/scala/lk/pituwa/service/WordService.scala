@@ -19,7 +19,7 @@ object WordService {
     Future.successful {
       //words.map(word => word -> WordRepository.getByPrefixName(word)).toMap
       words.map(
-        word => word -> WordRepository.similar(word).sortBy(p2 => JaroWinklerMetric.compare(word, p2).get)
+        word => word -> WordRepository.jaroAndHamming(word).sortBy(p2 => JaroWinklerMetric.compare(word, p2).get)
       ).toMap
     }
   }

@@ -4,6 +4,9 @@ import com.typesafe.scalalogging.Logger
 import lk.pituwa.adapter.H2Adapter
 import lk.pituwa.utils.FileOps
 
+import scala.concurrent._
+import scala.concurrent.ExecutionContext.Implicits.global
+
 /**
   * Created by nayana on 27/7/17.
   */
@@ -59,10 +62,10 @@ object DocumentRepository
       db.select(sql).toStream.nonEmpty
     }
 
-    def add(text: String, url: String) = {
-      if (isInDb(text)) {
+    def add(text: String, url: String) = Future{
+      if (!isInDb(text)) {
         val hash = FileOps.md5String(text)
-        val sql = s"""INSERT INTO WEB_PAGE (DOC_ID, URL, TEXT_BODY) VALUES ('$hash', '$text', '$url')"""
+        val sql = s"""INSERT INTO WEB_PAGE (DOC_ID, TEXT_BODY, URL) VALUES ('$hash', '${text.replace("'", "")}', '$url')"""
         val db = new H2Adapter
         db.execute(sql)
       }
