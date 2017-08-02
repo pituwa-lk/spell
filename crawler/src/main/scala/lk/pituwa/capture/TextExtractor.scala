@@ -20,6 +20,7 @@ class TextExtractor {
     val doc: HtmlUnitDocument = browser.parseString(response.body)
     val pText = doc >> allText("p")
     val dText = doc >> allText("div")
-    pText + " " + dText
+    val fText = doc >> allText("font")
+    pText + " " + dText + " " + fText
   }
 }
