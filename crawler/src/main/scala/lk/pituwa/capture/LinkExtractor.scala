@@ -27,7 +27,7 @@ class LinkExtractor {
     ( doc >> pElementList("a") match {
       case elms: List[HtmlUnitElement] => {
         elms.map(elm => {
-          if (elm.hasAttr("href")) {
+          if (elm.hasAttr("href") && !elm.underlying.getAttribute("href").contains("mailto")) {
             Some(elm.underlying.getAttribute("href"))
           } else {
             None

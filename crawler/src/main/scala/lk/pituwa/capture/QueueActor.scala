@@ -22,7 +22,7 @@ class QueueActor(crawler: ActorRef) extends Actor {
   import QueueActor._
 
   var domainQueue = Iterator(
-    "http://www.lankadeepa.lk", "http://www.divaina.com/", "http://www.silumina.lk/")
+    "http://www.divaina.com/", "http://www.silumina.lk/")
 
   override def receive: Receive = {
     case SendFirst => {
