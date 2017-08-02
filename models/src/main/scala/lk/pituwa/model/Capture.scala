@@ -13,5 +13,5 @@ case class Request(uri: String) {
   lazy val prefix:String = url.scheme.get + "://" + url.hostParts.mkString(".")
 }
 
-case class Response(request: Request, body: String)
+case class Response(request: Request, body: String, status: Int = 200)
 case class Document(response: Response, links: List[String], infoMap: List[InfoMap])

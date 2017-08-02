@@ -27,6 +27,11 @@ object LinkRepository
     crawled = crawled ++ List(url)
   }
 
+  def delCrawled(url: String): Unit = {
+    links = links.filter(!_.equals(url))
+    crawled = crawled ++ List(url)
+  }
+
   var service = 0
 
   def get:Option[String] = {

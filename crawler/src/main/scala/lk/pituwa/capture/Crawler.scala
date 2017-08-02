@@ -31,7 +31,7 @@ class Crawler(request: Request) {
       val response: HttpResponse[String] = Http(request.uri).timeout(5000, 5000).options(HttpOptions.followRedirects(true)).asString
       response.code match {
         case 200 => Response(request, response.body)
-        case 404 => Response(request, "")
+        case 404 => Response(request, "", 404)
         case _ => Response(request, "")
       }
     } catch  {

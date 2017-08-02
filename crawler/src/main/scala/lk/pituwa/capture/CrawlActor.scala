@@ -27,22 +27,28 @@ class CrawlActor extends Actor {
     case Download(url) => {
 
       val response = new Crawler(Request(url)).crawl
-      val textBody = textExtractor.extract(response)
-      val words = textBody.split(" ").toList.filter(_.matches("""^[\u0D80-\u0DFF\u200D]+$""")).distinct
-      logger.info("WebWord size is {}", words.size)
-      val links = linkExtractor.extract(response).distinct.map(v => {
-        try {
-          Some(LinkRepository.sanitize(v))
-        } catch {
-          case e:UriDecodeException => {
-            logger.info("bad link found {}", v)
-            None
+      if (response.status == 200) {
+        val textBody = textExtractor.extract(response)
+        val words = textBody.split(" ").toList.filter(_.matches("""^[\u0D80-\u0DFF\u200D]+$""")).distinct
+        logger.info("WebWord size is {}", words.size)
+        val links = linkExtractor.extract(response).distinct.map(v => {
+          try {
+            Some(LinkRepository.sanitize(v))
+          } catch {
+            case e: UriDecodeException => {
+              logger.info("bad link found {}", v)
+              None
+            }
           }
-        }
-      }).filter(_.nonEmpty).map(_.get)
-      LinkRepository.setCrawled(response.request.uri)
-      LinkRepository.bulkAdd(links)
-      WordRepository.add(words, response.request.url.host.get)
+        }).filter(_.nonEmpty).map(_.get)
+        LinkRepository.setCrawled(response.request.uri)
+        LinkRepository.setCrawled(response.request.uri)
+        LinkRepository.bulkAdd(links)
+        WordRepository.add(words, response.request.url.host.get)
+      } else {
+        LinkRepository.delCrawled(response.request.uri)
+      }
+
       //DocumentRepository.add(textBody.filter(_.matches("""^[\u0D80-\u0DFF\u200D]+$""")), response.request.uri)
       sender() ! SendNext
     }
