@@ -72,6 +72,7 @@ object WordService {
   def sanitize(input: String): String = input.replaceAll("\\?|\\.|\\,|\\!", " ")
 
   def spellCheck(document: String): Future[Map[String, List[String]]] =  {
+    import scala.concurrent.ExecutionContext.Implicits.global
     val words = sanitize(document.trim()).split(" ").distinct
     val potential = words.filter(isNotFound).toList
     val fLeven = Future(potential.map(levenshteinMap).toMap)
@@ -82,7 +83,7 @@ object WordService {
         fJaro.flatMap(j => {
             fDice.map(d => {
                  potential.map(p => {
-                   p -> d(p).intersect(j.(p).intersect(v.(p)))
+                   p -> d(p).intersect(j(p).intersect(v(p)))
                  }).toMap
             })
         })

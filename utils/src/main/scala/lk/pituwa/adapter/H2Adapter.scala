@@ -14,7 +14,7 @@ object Implicits {
           resultSet.next() match {
             case true => true
             case false => {
-              resultSet.getStatement.getConnection.close()
+              resultSet.getStatement.getConnection.close() //this approach seems to be working
               false
             }
           }
