@@ -70,6 +70,12 @@ object WebServer {
           entity(as[List[String]]) { words => complete(WordService.bulkLookup(words)) }
         }
       }
+    } ~ cors() {
+      path("spell") {
+        post {
+          entity(as[String]) { document => complete(WordService.spellCheck(document)) }
+        }
+      }
     }
 
 

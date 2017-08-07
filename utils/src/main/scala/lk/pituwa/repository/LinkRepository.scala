@@ -24,6 +24,7 @@ object LinkRepository
 
   def setCrawled(url: String): Unit = {
     saveOne(url)
+    links = links.filter(x => x != url)
     crawled = crawled ++ List(url)
   }
 

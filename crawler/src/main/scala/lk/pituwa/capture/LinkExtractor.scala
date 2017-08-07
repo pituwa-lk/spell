@@ -63,6 +63,7 @@ class LinkExtractor {
 
       prot + "://" + host + path + query
     }).filter(p = v => {
+      //v.contains("http://www.bbc.com/sinhala")
       import com.netaporter.uri.dsl._
       val vx:Uri = v
       vx.host.get == response.request.url.host.get

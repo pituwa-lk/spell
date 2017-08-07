@@ -40,8 +40,10 @@ class H2Adapter {
 
   lazy val password = config.getString("db.password")
 
+  var connection: Connection = null
+
   def execute(sql: String): Long = {
-    var connection: Connection = null
+    //var connection: Connection = null
     var id:Long = 0
     try {
       Class.forName(driver)
@@ -70,8 +72,12 @@ class H2Adapter {
     } catch {
       case e:Throwable => e.printStackTrace
     }
-    //connection.close()
+    //connection.close() //not able to close connection here, because result-set is still streaming
     resultSet
+  }
+
+  def close = {
+    connection.close()
   }
 }
 

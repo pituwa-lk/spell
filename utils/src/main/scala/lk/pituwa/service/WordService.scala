@@ -1,8 +1,6 @@
 package lk.pituwa.service
 
-
-
-import com.rockymadden.stringmetric.similarity.JaroWinklerMetric
+import com.rockymadden.stringmetric.similarity.{DiceSorensenMetric, JaroWinklerMetric, LevenshteinMetric}
 import lk.pituwa.repository.WordRepository
 
 import scala.concurrent.Future
@@ -12,24 +10,90 @@ import scala.concurrent.Future
   */
 object WordService {
 
-  import scala.concurrent.ExecutionContext.Implicits.global
-
-
-  def bulkLookup(words: List[String]):Future[Map[String,List[String]]] = {
-    Future.successful {
-      //words.map(word => word -> WordRepository.getByPrefixName(word)).toMap
-      words.map(
-        word => word -> WordRepository.jaroAndHamming(word).sortBy(p2 => JaroWinklerMetric.compare(word, p2).get)
-      ).toMap
-    }
+  lazy val wordTree: Map[String, List[String]] = {
+    WordRepository.get.map(word => {
+      val prefix = word.substring(0, nGramSize)
+      prefix -> List(word)
+    }).toMap
   }
 
-  //we can add a loop and return words based on min max criteria
-  def getWordWithPrefix(prefix: String, delta: Int = 0):Future[List[String]] = {
-    Future {
-      val words = WordRepository.words.keys.toList.par
-      words.filter(word => { score(word, prefix) == (prefix.length - delta) } ).toList.slice(0,10)
+  val nGramSize = 2
+
+  def diceSorensenMetric(p1: String):(String, List[String]) = {
+    val prefix = p1.substring(0, nGramSize)
+    val tree = wordTree.get(prefix) match {
+      case Some(v) => v
+      case None => throw new Exception("subtree not found")
     }
+    p1 -> tree.map(word => word -> (DiceSorensenMetric(1).compare(p1, word) match  {
+      case Some(i) => i
+      case None => 0.00
+    })
+    ).sortBy(_._2).slice(0, 10).map(_._1)
+  }
+
+  def jaroWinklerMap(p1: String):(String, List[String]) = {
+    val prefix = p1.substring(0, nGramSize)
+    val tree = wordTree.get(prefix) match {
+      case Some(v) => v
+      case None => throw new Exception("subtree not found")
+    }
+    p1 -> tree.map(word => word -> (JaroWinklerMetric.compare(p1, word) match  {
+      case Some(i) => i
+      case None => 0.00
+    })
+    ).sortBy(_._2).slice(0, 10).map(_._1)
+  }
+
+  def levenshteinMap(p1: String):(String, List[String]) = {
+    val prefix = p1.substring(0, nGramSize)
+    val tree = wordTree.get(prefix) match {
+      case Some(v) => v
+      case None => throw new Exception("subtree not found")
+    }
+    p1 -> tree.map(word => word -> (LevenshteinMetric.compare(p1, word) match  {
+      case Some(i) => i
+      case None => 9999
+    })
+    ).sortBy(_._2).slice(0, 10).map(_._1)
+  }
+
+  def isFound(word: String):Boolean = {
+    val prefix = word.substring(0, nGramSize)
+    val tree = wordTree.get(prefix) match {
+      case Some(v) => v
+      case None => throw new Exception("indexed miss matched")
+    }
+    tree.contains(word)
+  }
+
+  def isNotFound(word: String) = !isFound(word)
+
+  def sanitize(input: String): String = input.replaceAll("\\?|\\.|\\,|\\!", " ")
+
+  def spellCheck(document: String): Future[Map[String, List[String]]] =  {
+    val words = sanitize(document.trim()).split(" ").distinct
+    val potential = words.filter(isNotFound).toList
+    val fLeven = Future(potential.map(levenshteinMap).toMap)
+    val fJaro  = Future(potential.map(jaroWinklerMap).toMap)
+    val fDice  = Future(potential.map(diceSorensenMetric).toMap)
+
+    fLeven.flatMap(v => {
+        fJaro.flatMap(j => {
+            fDice.map(d => {
+                 potential.map(p => {
+                   p -> d(p).intersect(j.(p).intersect(v.(p)))
+                 }).toMap
+            })
+        })
+    })
+  }
+
+  def lookup(word: String): Map[String, List[String]] = {
+    val lev = levenshteinMap(word)
+    val jaro = jaroWinklerMap(word)
+    val dice = diceSorensenMetric(word)
+    List(word -> lev._2.intersect(jaro._2.intersect(dice._2))).toMap
   }
 
   def score(p1: String, p2: String, matched: Int = 0):Int = {

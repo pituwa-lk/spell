@@ -32,11 +32,11 @@ class Crawler(request: Request) {
       response.code match {
         case 200 => Response(request, response.body)
         case 404 => Response(request, "", 404)
-        case _ => Response(request, "")
+        case _ => Response(request, "" , 301)
       }
     } catch  {
       case e:Exception => {
-        Response(request, "")
+        Response(request, "", 500)
       }
     }
   }
