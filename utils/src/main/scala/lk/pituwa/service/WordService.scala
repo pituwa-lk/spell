@@ -10,14 +10,31 @@ import scala.concurrent.Future
   */
 object WordService {
 
-  lazy val wordTree: Map[String, List[String]] = {
-    WordRepository.get.map(word => {
-      val prefix = word.substring(0, nGramSize)
-      prefix -> List(word)
-    }).toMap
+  val nGramSize = 2
+
+  var alpaTree = scala.collection.mutable.Map[String, List[String]]().withDefaultValue(List())
+
+  var betaTree = scala.collection.mutable.Map[String, List[String]]().withDefaultValue(List())
+
+  var errors = scala.collection.mutable.ArrayStack[String]()
+
+  lazy val wordTree = betaTree
+
+  WordRepository.get.filter(_.length >= 2).foreach(word => {
+    val chr = word.substring(0, 1)
+    val prefix = word.substring(0, 2)
+    if (chr.matches("\u200D")) errors.push(word)
+    alpaTree.update(chr, alpaTree(chr) :+ word)
+    betaTree.update(prefix, betaTree(prefix) :+ word)
+  })
+
+  lazy val alphaStats = {
+    alpaTree.keys.map(key =>  key -> alpaTree(key).size).toSeq.sortBy(- _._2)
   }
 
-  val nGramSize = 2
+  lazy val betaStats = {
+    betaTree.keys.map(key =>  key -> alpaTree(key).size).toSeq.sortBy(- _._2)
+  }
 
   def diceSorensenMetric(p1: String):(String, List[String]) = {
     val prefix = p1.substring(0, nGramSize)
@@ -45,17 +62,17 @@ object WordService {
     ).sortBy(_._2).slice(0, 10).map(_._1)
   }
 
-  def levenshteinMap(p1: String):(String, List[String]) = {
+  def levenshteinMap(p1: String):List[String] = {
     val prefix = p1.substring(0, nGramSize)
     val tree = wordTree.get(prefix) match {
       case Some(v) => v
       case None => throw new Exception("subtree not found")
     }
-    p1 -> tree.map(word => word -> (LevenshteinMetric.compare(p1, word) match  {
+    tree.map(word => word -> (LevenshteinMetric.compare(p1, word) match  {
       case Some(i) => i
       case None => 9999
     })
-    ).sortBy(_._2).slice(0, 10).map(_._1)
+    ).sortBy(- _._2).slice(0, 10).map(_._1)
   }
 
   def isFound(word: String):Boolean = {
@@ -75,7 +92,7 @@ object WordService {
     import scala.concurrent.ExecutionContext.Implicits.global
     val words = sanitize(document.trim()).split(" ").distinct
     val potential = words.filter(isNotFound).toList
-    val fLeven = Future(potential.map(levenshteinMap).toMap)
+    val fLeven = Future(potential.map(word => word -> levenshteinMap(word)).toMap)
     val fJaro  = Future(potential.map(jaroWinklerMap).toMap)
     val fDice  = Future(potential.map(diceSorensenMetric).toMap)
 
@@ -94,7 +111,7 @@ object WordService {
     val lev = levenshteinMap(word)
     val jaro = jaroWinklerMap(word)
     val dice = diceSorensenMetric(word)
-    List(word -> lev._2.intersect(jaro._2.intersect(dice._2))).toMap
+    List(word -> lev.intersect(jaro._2.intersect(dice._2))).toMap
   }
 
   def score(p1: String, p2: String, matched: Int = 0):Int = {

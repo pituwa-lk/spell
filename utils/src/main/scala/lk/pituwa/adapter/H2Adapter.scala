@@ -62,7 +62,6 @@ class H2Adapter {
   }
 
   def select(sql: String): ResultSet = {
-    var connection: Connection = null
     var resultSet: ResultSet = null
     try {
       Class.forName(driver)
@@ -77,7 +76,7 @@ class H2Adapter {
   }
 
   def close = {
-    connection.close()
+    if (connection != null && !connection.isClosed) connection.close()
   }
 }
 

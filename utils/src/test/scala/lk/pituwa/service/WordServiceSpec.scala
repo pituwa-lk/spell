@@ -7,8 +7,22 @@ import org.scalatest.FlatSpec
   */
 class WordServiceSpec extends FlatSpec
 {
+
+  "WordService" should "provide statistics on index " in {
+    val stats = WordService.alphaStats
+    assert(stats.slice(0, 10).nonEmpty)
+  }
+
+  "WordService" should "have a workable tree" in {
+    assert(WordService.wordTree.nonEmpty)
+    assert(WordService.wordTree.isDefinedAt("ලා"))
+    /*val keys = WordService.wordTree.keys.slice(0, 10)
+    assert(keys.nonEmpty)*/
+  }
+
   "WordService" should "return a list of closely matching words for levenstine" in {
     val list = WordService.levenshteinMap("ආද")
-    assert(list._2.nonEmpty)
+    assert(list.nonEmpty)
+    assert(list.size == 10)
   }
 }

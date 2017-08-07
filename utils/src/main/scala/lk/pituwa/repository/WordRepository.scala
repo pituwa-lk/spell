@@ -23,10 +23,9 @@ object WordRepository
 
   def get = {
     val db = new H2Adapter
-    val rs = db.select(s"SELECT * FROM WORD")
-    val map = rs.toStream.map(v => v.getString("WORD"))
-    db.close
-    map.toList
+    val rs = db.select("SELECT * FROM WORD")
+    val map = rs.toStream.map(v => v.getString("WORD")).toList
+    map
   }
 
   def add(filtered: List[String], domain: String):Unit = {
