@@ -1,6 +1,6 @@
 package lk.pituwa.adapter
 
-import java.sql.{Connection, DriverManager, ResultSet, Statement}
+import java.sql.{Connection, DriverManager, ResultSet}
 
 import com.typesafe.config.ConfigFactory
 
@@ -10,7 +10,15 @@ object Implicits {
 
     def toStream: Stream[ResultSet] = {
       new Iterator[ResultSet] {
-        def hasNext = resultSet.next()
+        def hasNext = {
+          resultSet.next() match {
+            case true => true
+            case false => {
+              resultSet.getStatement.getConnection.close() //this approach seems to be working
+              false
+            }
+          }
+        }
 
         def next() = resultSet
       }.toStream
@@ -32,8 +40,10 @@ class H2Adapter {
 
   lazy val password = config.getString("db.password")
 
+  var connection: Connection = null
+
   def execute(sql: String): Long = {
-    var connection: Connection = null
+    //var connection: Connection = null
     var id:Long = 0
     try {
       Class.forName(driver)
@@ -52,7 +62,6 @@ class H2Adapter {
   }
 
   def select(sql: String): ResultSet = {
-    var connection: Connection = null
     var resultSet: ResultSet = null
     try {
       Class.forName(driver)
@@ -62,8 +71,12 @@ class H2Adapter {
     } catch {
       case e:Throwable => e.printStackTrace
     }
-    //connection.close()
+    //connection.close() //not able to close connection here, because result-set is still streaming
     resultSet
+  }
+
+  def close = {
+    if (connection != null && !connection.isClosed) connection.close()
   }
 }
 

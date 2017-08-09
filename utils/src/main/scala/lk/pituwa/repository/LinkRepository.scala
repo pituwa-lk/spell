@@ -18,30 +18,36 @@ object LinkRepository
 
   val logger = Logger("links")
 
-  var links: List[Link] = List()
+  var links: List[String] = List()
 
-  var crawled: List[Link] = List()
+  var crawled: List[String] = List()
 
-  def setCrawled(url: Link): Unit = {
+  def setCrawled(url: String): Unit = {
     saveOne(url)
+    links = links.filter(x => x != url)
+    crawled = crawled ++ List(url)
+  }
+
+  def delCrawled(url: String): Unit = {
+    links = links.filter(!_.equals(url))
     crawled = crawled ++ List(url)
   }
 
   var service = 0
 
-  def get: Link = {
-    val ret = links.head
-    links = links.tail
+  def get:Option[String] = {
+    val ret = links.headOption
+    if (links.nonEmpty) links = links.tail
     ret
   }
 
-  def getFilter(filter: String):Link = {
-      links.filter(s => s.link.contains(filter)).head
+  def getFilter(filter: String):String = {
+      links.filter(s => s.contains(filter)).head
   }
 
   def empty: Boolean = links.isEmpty
 
-  def bulkAdd(list: List[Link]):Unit = {
+  def bulkAdd(list: List[String]):Unit = {
     val delta = list.par.intersect(crawled.par)
     val non = list.par.diff(delta.par).toList
     links = links ::: non
@@ -49,23 +55,23 @@ object LinkRepository
     logger.info("report current link size: {} and visited {}", links.size, crawled.size)
   }
 
-  def getById(id: Int):Option[Link] = {
+  /*def getById(id: Int):Option[String] = {
     links.find(v => v.id == id) match {
       case None => crawled.find(v => v.id == id)
       case Some(e) => Some(e)
     }
-  }
+  }*/
 
   def init = {
     val db = new H2Adapter
     db.execute("CREATE TABLE IF NOT EXISTS LINKS(LINK CHAR(2000) NOT NULL,VISITED INT, ID INT DEFAULT NOT NULL AUTO_INCREMENT PRIMARY KEY)")
   }
 
-  def saveOne(link : Link): Unit = {
+  def saveOne(link : String): Unit = {
     Future {
       val db = new H2Adapter
-      if (!isInDb(link)) db.execute(s"""INSERT INTO LINKS (link, visited) VALUES ('${sanitize(link.link)}', '1')""")
-      else db.execute(s"""UPDATE LINKS SET VISITED = '1' WHERE LINK = '${sanitize(link.link)}'""")
+      if (!isInDb(link)) db.execute(s"""INSERT INTO LINKS (link, visited) VALUES ('${sanitize(link)}', '1')""")
+      else db.execute(s"""UPDATE LINKS SET VISITED = '1' WHERE LINK = '${sanitize(link)}'""")
     }
   }
 
@@ -74,15 +80,15 @@ object LinkRepository
       links.par.foreach(v => {
         val db = new H2Adapter
         if (!isInDb(v)) {
-          db.execute(s"""INSERT INTO LINKS (link, visited) VALUES ('${sanitize(v.link)}', '0')""")
-          val rid = db.select("""CALL SCOPE_IDENTITY()""")
-          v.id = rid.toStream.head.getInt(0)
+          db.execute(s"""INSERT INTO LINKS (link, visited) VALUES ('${sanitize(v)}', '0')""")
+          /*val rid = db.select("""CALL SCOPE_IDENTITY()""")
+          var id = rid.toStream.head.getInt(0)*/
         }
       })
       crawled.par.foreach(v => {
         val db = new H2Adapter
-        if (!isInDb(v)) db.execute(s"""INSERT INTO LINKS (link, visited) VALUES ('${sanitize(v.link)}', '1')""")
-        else db.execute(s"""UPDATE LINKS SET VISITED = '1' WHERE LINK = '${sanitize(v.link)}'""")
+        if (!isInDb(v)) db.execute(s"""INSERT INTO LINKS (link, visited) VALUES ('${sanitize(v)}', '1')""")
+        else db.execute(s"""UPDATE LINKS SET VISITED = '1' WHERE LINK = '${sanitize(v)}'""")
       })
     }
   }
@@ -93,16 +99,16 @@ object LinkRepository
     val db = new H2Adapter
     val rs = db.select(s"SELECT * FROM LINKS")
     rs.toStream.map(v => {
-      Link(link = v.getString("LINK"), visited = v.getInt("VISITED"), id = v.getInt("ID"))
-    }).toList.groupBy(_.visited)
+      v.getString("LINK") -> v.getInt("VISITED")
+    }).toList.groupBy(_._2)
   }
 
-  lazy val nonVisited: immutable.Iterable[Link] = boot.filter(p => p._1 == 0).flatMap(v => v._2)
-  lazy val visited: immutable.Iterable[Link] = boot.filter(p => p._1 == 1).flatMap(v => v._2)
+  lazy val nonVisited: immutable.Iterable[String] = boot.filter(p => p._1 == 0).map(v => v._2.head._1)
+  lazy val visited: immutable.Iterable[String] = boot.filter(p => p._1 == 1).map(v => v._2.head._1)
 
-  def isInDb(url: Link):Boolean = {
+  def isInDb(url: String):Boolean = {
     val db = new H2Adapter
-    val rs = db.select(s"SELECT * FROM LINKS WHERE LINK = '${sanitize(url.link)}'")
+    val rs = db.select(s"SELECT * FROM LINKS WHERE LINK = '${sanitize(url)}'")
     rs.toStream.nonEmpty
   }
   

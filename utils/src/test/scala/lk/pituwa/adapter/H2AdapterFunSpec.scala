@@ -43,7 +43,7 @@ class H2AdapterFunSpec extends FlatSpec {
   "search strategy" should "be able to find words" in {
     import Implicits._
     val prefix = "පි"
-    val db = new H2Adapter
+    implicit val db = new H2Adapter
     val rs = db.select("""SELECT * FROM WORD""")
     val words = rs.toStream.map(r => {
       r.getString("word")

@@ -1,11 +1,10 @@
-package lk.pituwa.pdf
+package lk.pituwa.scanner.pdf
 
 import java.io.File
 
 import akka.actor.Actor
 import com.typesafe.scalalogging.Logger
-import lk.pituwa.model.Word
-import lk.pituwa.repository.{DocumentRepository, WordRepository}
+import lk.pituwa.repository.WordRepository
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.text.PDFTextStripper
 
@@ -572,22 +571,7 @@ class DocumentExtraActor extends Actor {
 
   override def receive: Receive = {
     case DocumentExtraActor.Peak() => {
-      DocumentRepository.files.size match {
-        case 0 => logger.info("no files to process, back to sleep")
-        case _ => {
-          if (busy) {
-            logger.warn("message arrive while still busy")
-          } else {
-            busy = true
-            DocumentRepository.files.foreach(v => {
-              logger.info(s"processing document ${v.getName}")
-              extract(v)
-              DocumentRepository.processed(v)
-              busy = false
-            })
-          }
-        }
-      }
+        println("hello")
     }
   }
 
@@ -604,9 +588,9 @@ class DocumentExtraActor extends Actor {
         stripper.setEndPage(page)
         val txt = Some(stripper.getText(pdf))
         val revised = transform(txt.get)
-        val potential = revised.split(" ").filter(_.matches("""^[\u0D80-\u0DFF\u200D]+$""")).map(v => Word(word = v)).toList
+        val potential = revised.split(" ").filter(_.matches("""^[\u0D80-\u0DFF\u200D]+$""")).toList
         logger.info(s"""Attempting to Add ${potential.size} of words""")
-        WordRepository.add(potential) //this may or may not belong here
+        WordRepository.add(potential, "pdf") //this may or may not belong here
       }
       pdf.close()
       //WordRepository.save

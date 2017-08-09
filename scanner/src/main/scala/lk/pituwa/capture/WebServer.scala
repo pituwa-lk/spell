@@ -11,19 +11,19 @@ import lk.pituwa.repository.{LinkRepository, WordRepository}
 import lk.pituwa.service.WordService
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.headers.{Allow, Origin, `Access-Control-Allow-Origin`}
-import lk.pituwa.capture.DataActor.{Initialize, LoadData}
-import lk.pituwa.pdf.DocumentExtraActor
+import lk.pituwa.capture.BootActor.{Initialize, LoadData}
+import lk.pituwa.scanner.pdf.DocumentExtraActor
 import spray.json.DefaultJsonProtocol._
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.io.StdIn
 
-object ShutdownSave extends Thread {
+/*object ShutdownSave extends Thread {
   override def run = {
     LinkRepository.save
     WordRepository.save
   }
-}
+}*/
 
 object WebServer {
 
@@ -35,7 +35,7 @@ object WebServer {
 
   val crawler: ActorRef = system.actorOf(Props[CrawlActor], "crawler")
   val queue: ActorRef = system.actorOf(Props(classOf[QueueActor], crawler), "queue")
-  val dataAct: ActorRef = system.actorOf(Props(classOf[DataActor], queue), "dataAct")
+  val dataAct: ActorRef = system.actorOf(Props(classOf[BootActor], queue), "dataAct")
   val documentor: ActorRef = system.actorOf(Props(new DocumentExtraActor), name = "documentor")
 
   //system.scheduler.schedule(90 seconds, 1 minutes, documentor, DocumentExtraActor.Peak())
@@ -44,30 +44,11 @@ object WebServer {
 
     import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
 
-    Runtime.getRuntime.addShutdownHook(ShutdownSave)
+    //Runtime.getRuntime.addShutdownHook(ShutdownSave)
     val route = cors() {
-      path("lookup") {
-        parameters('lookup, 'size.as[Int].?) { (lookup, size) => {
-          get {
-            size match {
-              case Some(z) => complete(WordService.getWordWithPrefix(lookup, z))
-              case None => complete(WordService.getWordWithPrefix(lookup))
-            }
-
-          }
-        }
-        }
-      }
-    } ~ cors() {
-      path("stats") {
-        get {
-          complete(HttpEntity(ContentTypes.`application/json`, s"""{"words":${WordRepository.words.size}, "sites":${LinkRepository.links.size}}"""))
-        }
-      }
-    } ~ cors() {
-      path("bulk") {
+      path("spell") {
         post {
-          entity(as[List[String]]) { words => complete(WordService.bulkLookup(words)) }
+          entity(as[String]) { document => complete(WordService.spellCheck(document)) }
         }
       }
     }

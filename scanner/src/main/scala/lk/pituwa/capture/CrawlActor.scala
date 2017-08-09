@@ -45,7 +45,7 @@ class CrawlActor extends Actor {
         //we need to remove any URLs that is pointing to the curreent page
         LinkRepository.setCrawled(response.request.uri)
         LinkRepository.bulkAdd(links)
-        WordRepository.add(words)
+        WordRepository.add(words, response.request.url.host.get)
       } else {
         LinkRepository.delCrawled(response.request.uri)
       }

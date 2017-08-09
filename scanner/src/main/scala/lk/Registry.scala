@@ -1,6 +1,5 @@
 package lk
 
-
 import java.net.URL
 
 import lk.pituwa.model.{Link, Request}

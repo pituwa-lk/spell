@@ -1,6 +1,5 @@
 package lk.pituwa.capture
 
-
 import lk.pituwa.model.Response
 import net.ruippeixotog.scalascraper.browser.HtmlUnitBrowser
 import net.ruippeixotog.scalascraper.browser.HtmlUnitBrowser._
