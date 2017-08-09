@@ -2,6 +2,9 @@ package lk.pituwa.service
 
 import org.scalatest.FlatSpec
 
+import scala.concurrent._
+import scala.concurrent.duration.Duration
+
 /**
   * Created by nayana on 8/7/17.
   */
@@ -24,5 +27,13 @@ class WordServiceSpec extends FlatSpec
     val list = WordService.levenshteinMap("ආද")
     assert(list.nonEmpty)
     assert(list.size == 10)
+  }
+
+  "WordService" should "return a map when spell checked with a string" in {
+    val document = "ආයුෙබොවන් ගෙරද යන්න එන්න කද"
+    val ret = WordService.spellCheck(document)
+
+    val map = Await.result(ret, Duration.Inf)
+    assert(map.keys.size > 0)
   }
 }

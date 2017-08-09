@@ -28,7 +28,7 @@ object WordRepository
     map
   }
 
-  def add(filtered: List[String], domain: String):Unit = {
+  def add(filtered: List[String]):Unit = {
     filtered.foreach(v => {
         saveOne(v)
     })

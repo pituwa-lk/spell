@@ -1,4 +1,4 @@
-package lk.pituwa.pdf
+package lk.pituwa.scanner.pdf
 
 import java.io.File
 
