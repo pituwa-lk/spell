@@ -46,11 +46,11 @@ object WordService {
     val chr = p1.substring(0, 1)
     val tree = wordTree.get(prefix) match {
       case Some(v) => v
-      case None => throw new Exception("subtree not found")
+      case None => List("vv")
     }
     val aTree = alpaTree.get(chr) match {
       case Some(v) => v
-      case None => throw new Exception("subtree not found")
+      case None => List("vv")
     }
     (tree.map(word => word -> (DiceSorensenMetric(1).compare(p1, word) match  {
       case Some(i) => i
@@ -68,11 +68,11 @@ object WordService {
     val chr = p1.substring(0, 1)
     val tree = wordTree.get(prefix) match {
       case Some(v) => v
-      case None => throw new Exception("subtree not found")
+      case None => List("vv")
     }
     val aTree = alpaTree.get(chr) match {
       case Some(v) => v
-      case None => throw new Exception("subtree not found")
+      case None => List("vv")
     }
     (tree.map(word => word -> (JaroWinklerMetric.compare(p1, word) match  {
       case Some(i) => i
@@ -90,11 +90,11 @@ object WordService {
     val chr = p1.substring(0, 1)
     val tree = wordTree.get(prefix) match {
       case Some(v) => v
-      case None => throw new Exception("subtree not found")
+      case None => List("vv")
     }
     val aTree = alpaTree.get(chr) match {
       case Some(v) => v
-      case None => throw new Exception("subtree not found")
+      case None => List("vv")
     }
     (tree.map(word => word -> (LevenshteinMetric.compare(p1, word) match  {
       case Some(i) => i
@@ -108,12 +108,20 @@ object WordService {
   }
 
   def isFound(word: String):Boolean = {
-    val prefix = word.substring(0, nGramSize)
-    val tree = wordTree.get(prefix) match {
-      case Some(v) => v
-      case None => throw new Exception("indexed miss matched")
+    if (word.length >= nGramSize) {
+      val prefix = word.substring(0, nGramSize)
+      val tree = wordTree.get(prefix) match {
+        case Some(v) => v
+        case None => List("vv")
+      }
+      tree.contains(word)
+    } else {
+      val tree = alpaTree.get(word) match {
+        case Some(v) => v
+        case None => List("vv")
+      }
+      tree.contains(word)
     }
-    tree.contains(word)
   }
 
   def isNotFound(word: String) = !isFound(word)
@@ -126,8 +134,8 @@ object WordService {
 
   def spellCheck(document: String): Future[Map[String, List[String]]] =  {
     import scala.concurrent.ExecutionContext.Implicits.global
-    val words = sanitize(document).trim().split(" ").map(v => v.trim).distinct
-    val potential = words.filter(isNotFound).toList
+    val words = sanitize(document).trim().split(" ").map(v => v.trim).distinct.filter(_.length > 2)
+    val potential = words.filter(_.nonEmpty).filter(isNotFound).toList
     val fLeven = Future(potential.map(word => word -> levenshteinMap(word)).toMap)
     val fJaro  = Future(potential.map(word => word -> jaroWinklerMap(word)).toMap)
     val fDice  = Future(potential.map(word => word -> diceSorensenMetric(word)).toMap)

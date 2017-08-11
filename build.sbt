@@ -23,6 +23,7 @@ lazy val commonSettings = Seq(
     "org.slf4j" % "slf4j-nop" % "1.6.4",
     "com.typesafe.scala-logging" %% "scala-logging" % "3.7.2",
     "com.typesafe" % "config" % "1.3.1",
+    "ch.megard" %% "akka-http-cors" % "0.2.1",
     "org.scalaj" %% "scalaj-http" % "2.3.0"
   ),
   resolvers += "Artima Maven Repository" at "http://repo.artima.com/releases",

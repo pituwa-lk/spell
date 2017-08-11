@@ -590,7 +590,7 @@ class DocumentExtraActor extends Actor {
         val revised = transform(txt.get)
         val potential = revised.split(" ").filter(_.matches("""^[\u0D80-\u0DFF\u200D]+$""")).toList
         logger.info(s"""Attempting to Add ${potential.size} of words""")
-        WordRepository.add(potential, "pdf") //this may or may not belong here
+        potential.foreach(word => WordRepository.saveOne(word))
       }
       pdf.close()
       //WordRepository.save
