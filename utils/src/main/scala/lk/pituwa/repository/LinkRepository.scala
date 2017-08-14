@@ -2,7 +2,7 @@ package lk.pituwa.repository
 
 import com.typesafe.scalalogging.Logger
 import lk.pituwa.adapter.H2Adapter
-import lk.pituwa.model.Link
+
 
 import scala.collection.immutable
 import scala.concurrent.Future

@@ -129,7 +129,7 @@ object WordService {
   def sanitize(input: String): String = {
     logger.info("received: {}", input)
     println(input)
-    input.replaceAll("\\?|\\.|\\,|\\!|&nbsp;|\\u00a0", " ")
+    input.replaceAll("\\(|\\)|\\[|\\]|\\?|\\.|\\,|\\!|&nbsp;|\\u00a0", " ")
   }
 
   def spellCheck(document: String): Future[Map[String, List[String]]] =  {

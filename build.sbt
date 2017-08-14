@@ -8,7 +8,7 @@ enablePlugins(JavaServerAppPackaging)
 
 lazy val commonSettings = Seq(
   organization := "lk.pituwa",
-  version := "0.1.0-SNAPSHOT",
+  version := "0.1.1-SNAPSHOT",
   scalaVersion := "2.12.1",
   libraryDependencies := Seq(
     "com.typesafe.akka" %% "akka-http" % "10.0.9",

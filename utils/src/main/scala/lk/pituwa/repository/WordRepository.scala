@@ -3,9 +3,6 @@ package lk.pituwa.repository
 
 import com.typesafe.scalalogging.Logger
 import lk.pituwa.adapter._
-import lk.pituwa.model.Word
-
-import scala.concurrent.Future
 import scala.util.matching.Regex
 
 /**
@@ -61,10 +58,13 @@ object WordRepository
     rs.getString("WORD")
   }
 
-  def saveOne(word: String): Unit = {
+  def saveOne(word: String): Int = {
     val db = new H2Adapter
     if (!isInDb(word)) {
         db.execute(s"""INSERT INTO WORD (WORD, COUNT) VALUES ('${word}', 1)""")
+        1
+    } else {
+      0
     }
   }
 }
